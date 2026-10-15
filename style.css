@@ -1,0 +1,503 @@
+/* Web edition stylesheet. The frame is drawn in the thesis's own materials:
+   USC blue (Pantone 280, RGB 12 37 119, USC identity manual p. 28) for the
+   masthead, numbers and reference targets; waveguides as the circuit layouts
+   draw them (grey ribbon, dark outline); orange as light, marking only where
+   the reader is. Neutrals come from the n-ramp alone. */
+:root {
+  --n0: #ffffff; --n1: #f5f7f9; --n2: #eaeef2; --n3: #dbe1e8; --n4: #c3ccd6;
+  --n5: #98a3b1; --n6: #5d6878; --n7: #434d5c; --n8: #2b3441; --n9: #1a2230; --n10: #10161f;
+  --blue: #0c2577; --blue-2: #34498f; --blue-line: #a3afd3; --mast-ink: #cdd4ec; --blue-wash: rgb(12 37 119 / .075);
+  --light: #e69f00; --wg: #d9d9d9; --wg-edge: #3a3f46;
+  --serif: "STIX Two Text", "Noto Serif CJK JP", "STIX Two", "Libertinus Serif", Georgia, serif;
+  --label: "Archivo", "Arial Narrow", sans-serif;
+  --mast-h: 3rem; --band: 1.75rem; --top: calc(var(--mast-h) + var(--band));
+  color-scheme: light;
+}
+/* Faces are served with the site (template/web/fonts/): STIX Two Text and
+   Archivo from google/fonts (OFL), subset to Latin, Greek and punctuation;
+   New Computer Modern Math from typst/typst-assets, the PDF's own math face;
+   Noto Serif CJK JP (OFL), the epigraph's face in the PDF, cut down to the
+   four characters of 木漏れ日 and reached through the serif stack. */
+@font-face { font-family: "STIX Two Text"; src: url("fonts/STIXTwoText.woff2") format("woff2"); font-weight: 400 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "STIX Two Text"; src: url("fonts/STIXTwoText-Italic.woff2") format("woff2"); font-weight: 400 700; font-style: italic; font-display: swap; }
+@font-face { font-family: "Archivo"; src: url("fonts/Archivo.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; font-style: normal; font-display: swap; }
+@font-face { font-family: "Noto Serif CJK JP"; src: url("fonts/NotoSerifJP-epigraph.woff2") format("woff2"); unicode-range: U+6728, U+6F0F, U+308C, U+65E5; font-display: swap; }
+@font-face { font-family: "New Computer Modern Math"; src: url("fonts/NewCMMath-Regular.woff2") format("woff2"); font-display: swap; }
+* { box-sizing: border-box; }
+html { scroll-padding-top: calc(var(--top) + 1.5rem); scrollbar-color: var(--n4) transparent; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body { margin: 0; background: var(--n1); color: var(--n10); font: 400 1.1875rem/1.6 var(--serif); -webkit-font-smoothing: antialiased; }
+::selection { background: rgb(230 159 0 / .3); }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+math { font-family: "New Computer Modern Math", math; }
+mrow.overline { border-top: .055em solid currentColor; padding-top: .1em; }
+img, svg { max-width: 100%; height: auto; }
+.skip { position: absolute; left: -999px; top: 0; }
+.skip:focus { left: 1rem; top: .5rem; z-index: 100; padding: .5rem 1rem; background: var(--n0); color: var(--n10); }
+
+/* Masthead. */
+.mast { position: sticky; top: 0; z-index: 50; height: var(--mast-h); display: flex; align-items: center; gap: 1.25rem; padding: 0 1rem;
+  background: var(--blue); color: var(--mast-ink); font: 500 .8125rem/1 var(--label); font-stretch: 80%; letter-spacing: .06em; text-transform: uppercase; }
+.mast-title { color: var(--n0); text-decoration: none; font-weight: 650; }
+.mast-author { color: var(--blue-line); }
+.mast-loc { margin-left: auto; display: flex; border: 1px solid rgb(255 255 255 / .22); font-variant-numeric: tabular-nums; }
+.mast-loc > span { padding: .35rem .6rem; }
+.mast-loc > span + span { border-left: 1px solid rgb(255 255 255 / .22); }
+.ml-ch::before { content: "Ch "; color: var(--blue-line); }
+.is-app > .ml-ch::before { content: "App "; }
+.ml-sec { color: var(--light); font-weight: 650; }
+.ml-of { color: var(--blue-line); }
+.rail-toggle { display: none; font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--n0);
+  background: none; border: 1px solid rgb(255 255 255 / .35); padding: .35rem .6rem; cursor: pointer; }
+
+/* Reading-progress coupler (drawn by site.js); pointing at it names the
+   part of the page there, clicking or dragging goes to it. */
+.coupler { position: sticky; top: var(--mast-h); z-index: 49; height: var(--band); background: var(--n1); border-bottom: 1px solid var(--n3);
+  cursor: pointer; touch-action: none; --cp-fill: var(--wg); --cp-edge: var(--wg-edge); --cp-w: 4; --cp-gap: 7; }
+.coupler svg { display: block; width: 100%; height: 100%; }
+.coupler-tip { position: absolute; top: calc(100% + .35rem); left: 0; padding: .3rem .55rem; white-space: nowrap; pointer-events: none;
+  background: var(--n9); color: var(--n0); font: 500 .75rem/1.2 var(--label); font-stretch: 85%; opacity: 0; transition: opacity .12s; }
+.coupler.is-pointing .coupler-tip:not(:empty) { opacity: 1; }
+@media (hover: none) { .coupler-tip { display: none; } }
+
+/* Frame and contents rail; the rail's edge is a waveguide. */
+.frame { display: grid; grid-template-columns: 18.5rem minmax(0, 1fr); }
+.rail { position: sticky; top: var(--top); height: calc(100dvh - var(--top)); overflow-y: auto; overscroll-behavior: contain;
+  padding: 1.5rem 1.25rem 3rem 1rem; scrollbar-width: none; background-color: var(--n2); border-right: 1px solid var(--n3); font: 400 .875rem/1.35 var(--label); font-stretch: 90%;
+  background-image: linear-gradient(var(--wg), var(--wg)), linear-gradient(var(--wg-edge), var(--wg-edge)), linear-gradient(var(--wg-edge), var(--wg-edge));
+  background-size: 4px 100%, 1px 100%, 1px 100%; background-position: right 3px top, right 7px top, right 2px top; background-repeat: no-repeat; }
+.rail ol, .rail ul { list-style: none; margin: 0; padding: 0; }
+.rail a { color: var(--n8); text-decoration: none; }
+.rail-home { display: block; margin: 0 0 1rem .25rem; font-weight: 650; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--n6) !important; }
+.rail .ch { margin: 0 0 .15rem; }
+.rail .ch > a { display: grid; grid-template-columns: 2.25rem 1fr; padding: .45rem .5rem .45rem .25rem; font-weight: 600; color: var(--n9); }
+.rail .ch > a .n { font-stretch: 70%; font-weight: 700; font-size: 1rem; line-height: 1.1; color: var(--blue); }
+.rail .ch > ol { display: none; margin: 0 0 .6rem; }
+.rail .ch.is-open > ol { display: block; }
+.rail .ch > ol a { display: grid; grid-template-columns: 2.25rem 1fr; padding: .32rem .5rem .32rem .25rem; position: relative; }
+.rail .ch > ol a .n { font-variant-numeric: tabular-nums; color: var(--blue-2); }
+.rail a:hover .t { text-decoration: underline; text-decoration-color: var(--n5); text-underline-offset: .2em; }
+.rail [aria-current="page"] { position: relative; background: var(--n0); color: var(--n10); box-shadow: 0 1px 2px rgb(16 22 31 / .08); }
+/* The current page lights the rail's guide along its own row. */
+.rail [aria-current="page"]::after { content: ""; position: absolute; top: 0; bottom: 0; right: calc(3px - 1.25rem); width: 4px; background: var(--light); }
+.rail-back { margin-top: 1.25rem !important; padding-top: 1rem !important; border-top: 1px solid var(--n4); }
+.rail-back a { display: block; padding: .3rem .25rem .3rem 2.5rem; color: var(--n7); }
+
+/* Reading column, with the section's apparatus in the right margin when there is room. */
+.doc { padding: 2.25rem clamp(1rem, 5vw, 4.5rem) 6rem; min-width: 0; }
+.doc > * { max-width: 40rem; margin-inline: auto; }
+.local { display: none; }
+@media (min-width: 1280px) {
+  .doc { display: grid; grid-template-columns: minmax(0, 40rem) minmax(11rem, 15rem); column-gap: clamp(2rem, 3vw, 3.5rem);
+    justify-content: center; align-content: start; padding-inline: clamp(1.5rem, 3vw, 3rem); }
+  .doc > * { grid-column: 1; margin-inline: 0; }
+  .doc > .local { display: block; grid-column: 2; grid-row: 1 / span 4; position: sticky; top: calc(var(--top) + 1.5rem); align-self: start;
+    max-height: calc(100dvh - var(--top) - 3rem); overflow-y: auto; overscroll-behavior: contain; padding: .25rem .25rem 2rem 0;
+    font: 400 .84rem/1.35 var(--label); font-stretch: 90%; scrollbar-width: thin; }
+  .doc:not(:has(.local)) { grid-template-columns: minmax(0, 40rem); }
+}
+.local summary { display: flex; align-items: center; gap: .45rem; margin: 0 0 .6rem; padding: .2rem 0; cursor: pointer; list-style: none; user-select: none;
+  font: 650 .7rem/1 var(--label); font-stretch: 75%; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
+.local summary::-webkit-details-marker { display: none; }
+/* A folded group: its chevron turns and a rule closes it off. */
+.local summary::before { content: ""; width: .32rem; height: .32rem; margin: 0 .1rem; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg) translate(-.08rem, -.08rem); transition: transform .15s; }
+.local details:not([open]) > summary { margin-bottom: 1.1rem; padding-bottom: .55rem; border-bottom: 1px solid var(--n3); }
+.local details:not([open]) > summary::before { transform: rotate(-45deg); }
+.local summary:hover { color: var(--n10); }
+.local ol { list-style: none; margin: 0 0 2rem; padding: 0; }
+.local .subs { background: linear-gradient(var(--wg), var(--wg)) 1px 0 / 3px 100% no-repeat, linear-gradient(var(--wg-edge), var(--wg-edge)) 0 0 / 1px 100% no-repeat,
+  linear-gradient(var(--wg-edge), var(--wg-edge)) 4px 0 / 1px 100% no-repeat; }
+.local .subs a { display: grid; grid-template-columns: 2.6rem 1fr; padding: .28rem 0 .28rem 1rem; color: var(--n8); text-decoration: none; position: relative; }
+.local .subs .n { color: var(--blue-2); font-variant-numeric: tabular-nums; }
+.local a:hover .t { text-decoration: underline; text-decoration-color: var(--blue); text-underline-offset: .2em; }
+.local .is-here a { color: var(--n10); font-weight: 600; }
+.local .is-here a::before { content: ""; position: absolute; left: 1px; top: 0; bottom: 0; width: 3px; background: var(--light); }
+.local .plates { display: grid; grid-template-columns: minmax(0, 1fr); gap: .7rem; }
+.local .plates a { display: block; padding: .5rem .5rem .45rem; background: var(--n0); border: 1px solid var(--n3); color: var(--n8); text-decoration: none; }
+.local .plates a:hover { border-color: var(--n5); }
+.local .thumb { display: grid; place-items: center; min-width: 0; height: 5.5rem; overflow: hidden; margin-bottom: .4rem; }
+.local .thumb > * { max-width: 100%; max-height: 5.5rem; width: auto; height: auto; pointer-events: none; }
+.local .thumb table { zoom: .4; font-size: .9rem; max-width: none; }
+/* A grid of panels: every panel in its cell, in the figure's columns. */
+.local .thumb.is-panels { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-auto-rows: calc((5.5rem - (var(--rows) - 1) * 3px) / var(--rows)); gap: 3px; place-items: stretch; }
+.local .thumb.is-panels > .cell { container-type: size; display: grid; place-items: center; min-width: 0; max-height: none; }
+.local .thumb.is-panels .cell > :is(img, svg) { width: 100%; height: 100%; max-height: none; object-fit: contain; }
+/* Numbered equations: the number, and the equation shrunk to a line that fades out where it is cut. */
+.local .eqs { display: grid; gap: .1rem; }
+.local .eqs a { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); align-items: center; padding: .3rem .4rem .3rem 0; color: var(--n8); text-decoration: none; border-bottom: 1px solid var(--n3); }
+.local .eqs a:hover { background: var(--n0); }
+.local .eqs .n { font: 600 .78rem/1 var(--label); font-stretch: 85%; color: var(--blue-2); font-variant-numeric: tabular-nums; }
+.local .eqv { min-width: 0; max-height: 3.4rem; overflow: hidden; pointer-events: none; color: var(--n9);
+  mask-image: linear-gradient(to right, #000 80%, transparent); }
+.local .eqv math { display: block math; width: max-content; margin: 0; zoom: .78; text-align: left; }
+.local .fl { font: 700 .72rem/1 var(--label); font-stretch: 75%; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); }
+.local .cap { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: .2rem; color: var(--n6); font-size: .78rem; }
+
+.running { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .7rem; margin-bottom: 2.75rem; border-bottom: 1px solid var(--n4);
+  font: 500 .75rem/1.3 var(--label); font-stretch: 75%; letter-spacing: .08em; text-transform: uppercase; color: var(--n6); }
+.running .n { color: var(--blue); font-weight: 650; }
+
+/* Headings. The page's own title (h2 on openers and back matter, h3 on sections) carries the large number. */
+.body h2, .body h3 { font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
+.body > h2:first-child, .body > h3:first-child { margin: 0 0 2rem; font: 600 clamp(2rem, 3.6vw, 2.6rem)/1.12 var(--serif); }
+.body > :first-child .hn { display: flex; align-items: center; gap: .9rem; margin-bottom: .6rem; font: 700 clamp(3.5rem, 8vw, 5.75rem)/.85 var(--label);
+  font-stretch: 62%; letter-spacing: -.01em; color: var(--blue); font-variant-numeric: tabular-nums; }
+.body > :first-child .hn::after { content: ""; flex: 1; height: 5px; background: var(--wg); border-block: 1px solid var(--wg-edge); }
+.body h2:not(:first-child) { margin: 2.6em 0 .8em; font: 600 1.75rem/1.2 var(--serif); }
+.body h3:not(:first-child) { margin: 2.4em 0 .7em; font: 600 1.45rem/1.25 var(--serif); }
+.body h4 { margin: 2.8em 0 .7em; font: 600 1.45rem/1.25 var(--serif); text-wrap: balance; }
+.body h4 .hn, .body h3:not(:first-child) .hn { margin-right: .55rem; font: 650 1.15rem/1 var(--label); font-stretch: 70%; color: var(--blue-2); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.body h5 { margin: 2em 0 .5em; font: italic 500 1.2rem/1.3 var(--serif); }
+.body p { margin: 0 0 1em; hyphens: auto; text-wrap: pretty; }
+/* Prose is justified as in the PDF, down to the width where hyphenation still keeps word gaps even. */
+@media (min-width: 641px) { .body > p, .home-abs > p:not(.more), .who-bio > p { text-align: justify; } }
+.body ul, .body ol { padding-left: 1.4em; }
+.body li { margin: .25em 0; }
+.body > div:empty { display: none; }
+
+/* Links. */
+.body a { color: inherit; text-decoration: underline; text-decoration-color: var(--blue-line); text-decoration-thickness: 1px; text-underline-offset: .2em; }
+.body a:hover { text-decoration-color: var(--blue); text-decoration-thickness: 2px; }
+.body a[href*="glossary.html"] { text-decoration-style: dotted; text-decoration-color: var(--n5); }
+.body a[role="doc-biblioref"] { font: 500 .82em/1 var(--label); font-stretch: 85%; color: var(--blue-2); text-decoration: none; font-variant-numeric: tabular-nums; }
+.body a[role="doc-biblioref"]:hover { color: var(--n10); text-decoration: underline; text-decoration-color: var(--blue); }
+.body a[href^="http"] { overflow-wrap: anywhere; }
+
+/* Display equations. */
+.equation { display: flex; align-items: center; gap: 1.5rem; margin: 1.3em 0; padding: .5rem .75rem; position: relative; }
+.equation > math { flex: 1; overflow-x: auto; overflow-y: hidden; padding-block: .3em; }
+.equation > p { margin: 0 !important; }
+.eq-num { font: 500 .9rem/1 var(--label); font-stretch: 80%; color: var(--n6); font-variant-numeric: tabular-nums; }
+math[display="block"] { font-size: 1.05em; }
+
+/* Figures sit on a white plate. */
+.body figure { margin: 0; }
+.body > figure { margin: 2.5rem 0; padding: 1.25rem 1.25rem 1rem; background: var(--n0); border: 1px solid var(--n3); text-align: center; overflow-x: auto; }
+.body > figure img { margin: 0 auto; max-height: 75vh; }
+.body figure > svg { margin-inline: auto; }
+.subgrid { display: grid; gap: 1.25rem; align-items: start; }
+figure figure > div { font-size: .9rem; line-height: 1.4; margin-top: .5rem; color: var(--n7); }
+figcaption { margin-top: 1.1rem; padding-top: .8rem; border-top: 1px solid var(--n3); text-align: left; font-size: .95rem; line-height: 1.5; color: var(--n8); }
+figcaption .fl { margin-right: .45rem; font: 700 .8rem/1 var(--label); font-stretch: 75%; letter-spacing: .07em; text-transform: uppercase; color: var(--blue); }
+
+/* Figures and tables open to a full view on click. */
+.body > figure:has(img, svg) :is(img, svg) { cursor: zoom-in; }
+.xref-pop figure :is(img, svg) { cursor: zoom-in; }
+:is(.body, .xref-pop) figure > table { cursor: zoom-in; }
+html.has-lightbox { overflow: hidden; }
+.lightbox { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; gap: 1rem; padding: 3.5rem clamp(1rem, 4vw, 3rem) 1.5rem;
+  background: rgb(16 22 31 / .97); opacity: 0; transition: opacity .2s ease-out; }
+.lightbox.is-shown { opacity: 1; }
+/* The stage scrolls a canvas that centres the plate while it is smaller than
+   the stage; site.js sizes the plate to fit (a table through `zoom`). */
+.lb-stage { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; cursor: zoom-out; scrollbar-width: thin; scrollbar-color: var(--n6) transparent; }
+.lb-canvas { display: flex; width: max-content; height: max-content; min-width: 100%; min-height: 100%; }
+.lb-plate { flex: none; margin: auto; padding: clamp(.75rem, 2vw, 1.5rem); background: var(--n0); color: var(--n10); text-align: center; cursor: default; }
+.lb-plate > :is(img, svg) { display: block; width: 100% !important; height: auto !important; max-width: none; max-height: none; }
+.lb-plate > p, .lb-plate figure { margin: 0; }
+.lb-plate .subgrid > * { min-width: 0; }
+.lb-plate .subgrid figure > :is(img, svg) { width: 100% !important; height: auto !important; max-width: none; max-height: none; }
+.lb-plate figure > div, .lb-plate > div:not(.subgrid) { color: var(--n7); font-size: .95rem; line-height: 1.4; text-align: center; }
+.lb-plate figure > div { margin-top: .5rem; }
+.lb-plate.is-table table { font-size: 1.125rem; }
+.lb-plate a { color: inherit; text-decoration: underline; text-decoration-color: var(--blue-line); text-underline-offset: .2em; }
+.lb-plate a:hover { text-decoration-color: var(--blue); text-decoration-thickness: 2px; }
+.lb-cap { flex: none; max-width: 52rem; margin: 0 auto; padding: 0; border: 0; max-height: 25vh; overflow: auto; color: var(--n3); font-size: 1rem; line-height: 1.5; }
+.lb-cap .fl { color: var(--n0); }
+.lb-cap a { color: inherit; }
+.lb-close, .lb-tools button { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; padding: 0;
+  background: none; border: 1px solid rgb(255 255 255 / .3); color: var(--n0); cursor: pointer; }
+.lb-close { position: absolute; top: .9rem; right: 1rem; }
+.lb-close:hover, .lb-tools button:hover { background: rgb(255 255 255 / .1); }
+.lb-close svg, .lb-tools svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+/* Zoom controls, beside the close button. */
+.lb-tools { position: absolute; top: .9rem; right: calc(1rem + 2.25rem + .75rem); display: flex; align-items: center; gap: .3rem; }
+.lb-tools button[aria-disabled="true"] { opacity: .35; cursor: default; background: none; }
+.lb-level { min-width: 2.9rem; text-align: center; font: 600 .8rem/1 var(--label); font-stretch: 85%; letter-spacing: .02em; color: var(--n3); font-variant-numeric: tabular-nums; }
+/* Zoomed past the stage, the plate is dragged to pan; site.js handles touch pinch and pan itself. */
+.lb-stage { touch-action: none; }
+.lb-stage.is-pannable .lb-plate { cursor: grab; }
+.lb-stage.is-panning, .lb-stage.is-panning .lb-plate { cursor: grabbing; user-select: none; }
+@media (prefers-reduced-motion: reduce) { .lightbox { transition: none; } }
+.xp-section > :is(h2, h3, h4, h5):first-child { margin-bottom: .5rem; }
+.xp-section > :is(h4, h5):not(:first-child) { margin: .8rem 0 .3rem; font-size: 1rem; }
+.xp-section .equation { padding: .2rem 0; }
+.xp-empty { color: var(--n6); font-style: italic; }
+
+/* Tables: ruled, tabular figures; the same in a preview and in the full view. */
+:is(.body, .xref-pop, .lb-plate) table { border-collapse: collapse; margin: 0 auto; font-size: .95rem; font-variant-numeric: tabular-nums; border-top: 1.5px solid var(--n9); border-bottom: 1.5px solid var(--n9); }
+:is(.body, .xref-pop, .lb-plate) thead { border-bottom: 1px solid var(--n9); }
+:is(.body, .xref-pop, .lb-plate) th { font-weight: 600; }
+:is(.body, .xref-pop, .lb-plate) :is(th, td) { padding: .4rem .75rem; }
+:is(.body, .xref-pop, .lb-plate) td[colspan] { text-align: left; padding-top: .6rem; }
+:is(.body, .xref-pop, .lb-plate) tbody tr + tr td { border-top: 1px solid var(--n3); }
+
+/* A tinted cell: the fill sits behind the content (html.typ, `table.cell`). */
+td:has(> .cell-fill), th:has(> .cell-fill) { position: relative; isolation: isolate; }
+.cell-fill { position: absolute; inset: 0; z-index: -1; }
+
+/* A photo cropped as in the PDF (html.typ, `crop-box`): the wrapper has the
+   visible aspect ratio, the image is enlarged and shifted by the cut. */
+.crop { display: block; overflow: hidden; }
+.crop img { display: block; width: var(--crop-w) !important; max-width: none !important; height: auto !important; max-height: none !important;
+  margin: var(--crop-mt) 0 0 var(--crop-ml) !important; }
+
+/* Code listings: set left as typed (figures centre their content) and scrolled
+   in their own box. Typst colours the tokens with inline styles from its default
+   theme, red keywords and operators against green strings; they are remapped to
+   a pair a protanope tells apart, Okabe-Ito blue and Okabe-Ito vermilion
+   darkened to read at 5.3:1 on the plate (#d55e00 itself is 3.9:1). */
+.body figure pre { margin: 0; text-align: left; overflow-x: auto; tab-size: 4; font-size: .85rem; line-height: 1.5; }
+.subgrid > :has(pre) { min-width: 0; }
+.body :not(pre) > code { overflow-wrap: anywhere; }
+pre span[style*="#d73948"] { color: #0072b2 !important; }
+pre span[style*="#198810"], pre span[style*="#b60157"] { color: #b04e00 !important; }
+pre span[style*="#4b69c6"] { color: var(--n10) !important; font-weight: 600; }
+
+/* Wide content. A table, a listing or a display equation wider than the text
+   column is scaled down to fit it (site.js, to a floor); whatever still does
+   not fit scrolls in its own box, with a shadow on each edge that has more
+   (covers attached to the content hide the shadows at the ends). */
+.body > figure, .body figure pre {
+  background: linear-gradient(to right, var(--n0) 45%, rgb(255 255 255 / 0)) left / 1.75rem 100% no-repeat local,
+    linear-gradient(to left, var(--n0) 45%, rgb(255 255 255 / 0)) right / 1.75rem 100% no-repeat local,
+    linear-gradient(to right, rgb(16 22 31 / .2), rgb(16 22 31 / 0)) left / .7rem 100% no-repeat scroll,
+    linear-gradient(to left, rgb(16 22 31 / .2), rgb(16 22 31 / 0)) right / .7rem 100% no-repeat scroll, var(--n0);
+}
+.body > .equation > math {
+  background: linear-gradient(to right, var(--n1) 45%, rgb(245 247 249 / 0)) left / 1.75rem 100% no-repeat local,
+    linear-gradient(to left, var(--n1) 45%, rgb(245 247 249 / 0)) right / 1.75rem 100% no-repeat local,
+    linear-gradient(to right, rgb(16 22 31 / .2), rgb(16 22 31 / 0)) left / .7rem 100% no-repeat scroll,
+    linear-gradient(to left, rgb(16 22 31 / .2), rgb(16 22 31 / 0)) right / .7rem 100% no-repeat scroll;
+}
+:is(.body, .xref-pop, .lb-plate) th .nw { white-space: nowrap; }
+
+/* A reference's target lights in USC blue as soon as it is followed, stays lit
+   while the page scrolls to it, and fades once the page has arrived (site.js, `is-lit`). */
+.equation::after { content: ""; position: absolute; inset: 0; pointer-events: none; transition: background-color .9s ease-out; }
+.body > figure { transition: border-color .9s ease-out, box-shadow .9s ease-out; }
+:is(.body :is(h4, h5, li), .body > div[id]:not(.equation)) { transition: background-color .9s ease-out; }
+.equation.is-lit::after, :is(.body :is(h4, h5, li), .body > div[id]:not(.equation)).is-lit { background-color: var(--blue-wash); transition: none; }
+.body > figure.is-lit { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue), 0 0 0 7px var(--blue-wash); transition: none; }
+
+/* Section list on chapter openers, contents, glossary, bibliography. */
+.section-list { margin-top: 2.5rem; }
+.section-list ul { list-style: none; padding: 0; border-top: 1px solid var(--n4); }
+.section-list li { margin: 0; border-bottom: 1px solid var(--n3); }
+.section-list a { display: block; padding: .7rem 0; text-decoration: none; font-size: 1.1rem; }
+.section-list a:hover { text-decoration: underline; text-decoration-color: var(--blue); }
+nav[role="doc-toc"] ol { list-style: none; padding-left: 1.4em; }
+nav[role="doc-toc"] > ol { padding-left: 0; }
+nav[role="doc-toc"] li { margin: .3em 0; }
+nav[role="doc-toc"] a { text-decoration: none; }
+nav[role="doc-toc"] > ol > li > div > a { font-weight: 600; }
+/* Contents page outlines: a wrapped title hangs past its number. */
+[data-page="contents.html"] nav[role="doc-toc"] a:has(> .oe-n) { display: flex; gap: .45em; }
+[data-page="contents.html"] nav[role="doc-toc"] .oe-n { flex: none; }
+[data-page="contents.html"] nav[role="doc-toc"] .oe-fig { min-width: 4.4em; }
+section[role="doc-bibliography"] ul { padding-left: 0; }
+section[role="doc-bibliography"] li { margin: 0 0 .8em; padding-left: 3rem; text-indent: -3rem; font-size: 1rem; }
+section[role="doc-bibliography"] .prefix a { font: 600 .85rem/1 var(--label); font-stretch: 85%; color: var(--blue-2); text-decoration: none; }
+.body > div[id] { margin: 0 0 .9em; }
+
+/* Cross-reference preview: the referenced object lifted onto a plate. */
+.xref-pop { position: fixed; z-index: 80; width: max-content; max-width: min(36rem, calc(100vw - 1.5rem)); max-height: 60vh; overflow: auto;
+  padding: .9rem 1.1rem 1rem; background: var(--n0); border: 1px solid var(--n4); color: var(--n10);
+  box-shadow: 0 14px 36px rgb(16 22 31 / .18), 0 2px 6px rgb(16 22 31 / .08); font-size: .95rem; line-height: 1.5;
+  opacity: 0; transform: translateY(4px); transition: opacity .16s ease-out, transform .2s cubic-bezier(.2, .8, .2, 1); }
+.xref-pop.is-shown { opacity: 1; transform: none; }
+.xp-pin, .xp-close { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; margin: -.35rem -.4rem -.35rem .2rem; padding: 0;
+  background: none; border: 0; color: var(--n6); cursor: pointer; }
+.xp-pin:hover, .xp-close:hover { color: var(--blue); background: var(--n2); }
+.xp-pin svg, .xp-close svg { width: .95rem; height: .95rem; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+/* A pinned preview: a window that stays, moves by its header and resizes from its corner. */
+.xref-pop.is-pinned { resize: both; max-width: calc(100vw - 1rem); max-height: calc(100dvh - 1rem); min-width: 14rem; min-height: 6rem; border-color: var(--blue);
+  box-shadow: 0 18px 44px rgb(12 37 119 / .22), 0 2px 6px rgb(16 22 31 / .1); }
+.xref-pop.is-pinned figure :is(img, svg) { width: 100%; height: auto; max-height: none; }
+/* Its figure is sized by site.js to fit the window (`xp-fit`); an inline SVG
+   drops the fixed size Typst writes on it and follows its width. */
+.xref-pop.is-pinned figure > svg { height: auto !important; }
+.xref-pop.is-pinned .subgrid figure > svg { width: 100% !important; }
+.xref-pop .xp-fit { flex: none; margin-inline: auto; }
+.xref-pop.is-pinned .subgrid > * { min-width: 0; overflow-wrap: anywhere; }
+.xref-pop .xp-head { cursor: grab; user-select: none; touch-action: none; }
+.xref-pop .xp-head:active { cursor: grabbing; }
+.xref-pop.is-figure-only { display: flex; flex-direction: column; overflow: hidden; }
+.xref-pop.is-figure-only > figure { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+.xref-pop.is-figure-only figcaption, .xref-pop.is-figure-only figure > div:not(.subgrid) { display: none; }
+.xref-pop.is-figure-only figure :is(img, svg) { cursor: zoom-out; }
+/* The header stays at the top while the window's content scrolls under it. */
+.xref-pop .xp-head { position: sticky; top: -.9rem; z-index: 1; display: flex; align-items: center; gap: .45rem; margin: -.9rem 0 .6rem; padding: .9rem 0 .5rem;
+  background: var(--n0); border-bottom: 1px solid var(--n3);
+  font: 700 .72rem/1 var(--label); font-stretch: 75%; letter-spacing: .1em; text-transform: uppercase; color: var(--n7); }
+.xref-pop .xp-head::before { content: ""; width: .45rem; height: .45rem; background: var(--blue); }
+.xref-pop .xp-where { margin-left: auto; font-weight: 500; color: var(--n6); text-transform: none; letter-spacing: .02em; font-stretch: 85%; }
+.xref-pop .equation { margin: 0; padding: .2rem 0; }
+.xref-pop figure { margin: 0; padding: 0; border: 0; background: none; text-align: center; }
+/* A figure preview takes the card's full width. */
+.xref-pop:has(> figure :is(img, svg)) { width: min(36rem, calc(100vw - 1.5rem)); }
+.xref-pop figure :is(img, svg) { width: 100%; height: auto; max-height: 45vh; object-fit: contain; }
+.xref-pop figcaption { font-size: .88rem; }
+.xref-pop table { font-size: .85rem; }
+.xref-pop p { margin: 0 0 .6em; }
+.xref-pop h2, .xref-pop h3, .xref-pop h4, .xref-pop h5 { margin: 0 0 .4rem; font: 600 1.1rem/1.3 var(--serif); }
+.xref-pop .hn { font: 650 .95rem/1 var(--label); font-stretch: 70%; color: var(--blue-2); margin-right: .4rem; }
+.xref-pop .prefix { font: 600 .85rem/1 var(--label); color: var(--blue-2); margin-right: .3rem; }
+
+/* Pager: its top edge is a guide. */
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 5rem; padding-top: .5rem;
+  background: linear-gradient(var(--wg), var(--wg)) 0 1px / 100% 3px no-repeat, linear-gradient(var(--wg-edge), var(--wg-edge)) 0 0 / 100% 1px no-repeat,
+    linear-gradient(var(--wg-edge), var(--wg-edge)) 0 4px / 100% 1px no-repeat; }
+.pager a { display: block; padding: 1rem 0 0; color: var(--n10); text-decoration: none; }
+.pager .next { grid-column: 2; text-align: right; }
+.pager .dir { display: block; margin-bottom: .45rem; font: 600 .7rem/1 var(--label); font-stretch: 75%; letter-spacing: .12em; text-transform: uppercase; color: var(--n6); }
+.pager .n { font: 700 1.2rem/1 var(--label); font-stretch: 65%; margin-right: .35rem; color: var(--blue); }
+.pager .t { font-size: 1.05rem; }
+.pager a:hover .t { text-decoration: underline; text-decoration-color: var(--blue); text-underline-offset: .2em; }
+
+@media (max-width: 1099px) {
+  .frame { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: fixed; top: var(--top); left: 0; z-index: 40; width: min(22rem, 88vw); transform: translateX(-100%); visibility: hidden;
+    transition: transform .28s cubic-bezier(.2, .8, .2, 1), visibility 0s .28s; }
+  body.rail-open .rail { transform: none; visibility: visible; transition: transform .28s cubic-bezier(.2, .8, .2, 1); box-shadow: 0 0 0 100vmax rgb(16 22 31 / .35); }
+  .rail-toggle { display: block; }
+  .mast-author { display: none; }
+}
+@media (max-width: 640px) {
+  body { font-size: 1.0625rem; }
+  .mast { gap: .6rem; }
+  .mast-title { display: none; }
+  .mast-loc { margin-left: 0; }
+  .rail-toggle { margin-left: auto; }
+  .running .r-pos { display: none; }
+  .body > figure { margin-inline: -1rem; padding-inline: .75rem; border-inline: 0; }
+  .subgrid { grid-template-columns: 1fr !important; }
+  .equation { padding-inline: 0; gap: .75rem; }
+  .pager { grid-template-columns: 1fr; }
+  .pager .next { grid-column: 1; text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) { .rail, .xref-pop { transition: none !important; transform: none; } }
+@media print { .mast, .coupler, .rail, .local, .pager, .xref-pop { display: none !important; } .frame { display: block; } body { background: #fff; } }
+
+/* Inside cover (abstract.html): the paragraphs Typst emits for the title page. */
+[data-page="abstract.html"] .body > img:first-child { width: min(24rem, 100%) !important; margin-bottom: 2.5rem; }
+[data-page="abstract.html"] .body > p:nth-of-type(1) { margin: 0 0 .5rem; font-size: 1.2rem; text-transform: lowercase; color: var(--n8); }
+[data-page="abstract.html"] .body > p:nth-of-type(1)::first-letter { text-transform: uppercase; }
+[data-page="abstract.html"] .body > p:nth-of-type(3) { margin: 0; font-size: 1rem; font-style: italic; color: var(--n7); }
+[data-page="abstract.html"] .body > p:nth-of-type(2) { margin: 0 0 2rem; font: 600 clamp(1.9rem, 3.4vw, 2.5rem)/1.15 var(--serif); letter-spacing: -.01em; text-wrap: balance; }
+[data-page="abstract.html"] .body > p:nth-of-type(4) { margin: 0 0 1.25rem; font-size: 1.35rem; }
+[data-page="abstract.html"] .body > p:nth-of-type(n+5):nth-of-type(-n+8) { margin: 0 0 .2rem; font-size: 1rem; color: var(--n8); }
+[data-page="abstract.html"] .body > p:nth-of-type(8) { margin-bottom: 0; padding-bottom: 2rem; border-bottom: 1px solid var(--n4); }
+[data-page="abstract.html"] .body > div > strong { font: 600 clamp(2rem, 3.6vw, 2.6rem)/1.12 var(--serif); margin: 4rem 0 1rem; }
+[data-page="abstract.html"] .body > div[style*="center"] { text-align: left !important; }
+[data-page="abstract.html"] .body h2 { margin: 4rem 0 1rem; font: 600 clamp(2rem, 3.6vw, 2.6rem)/1.12 var(--serif); }
+/* The cover lines stay ragged; the Abstract, and the passages wrapped to mark
+   their language (Resumo, Agradecementos), are justified like the rest of the prose. */
+[data-page="abstract.html"] .body > p:nth-of-type(-n+8) { text-align: left; }
+@media (min-width: 641px) { .body > div[lang] > p, .body > div[lang] > div[lang] > p, [data-page="abstract.html"] .body > div[style*="center"] p { text-align: justify; } }
+
+/* Homepage (index.html, written by meta/build_site.py from template/web/home.json).
+   One grid of two equal columns runs the whole page: name and contact links,
+   then the photo beside the thesis plate (one shared bottom edge), then the
+   abstract beside the chapters with the bio under them, then how to cite. No
+   rail: the chapter list is the way in. Fields the author has not filled yet
+   show as dashed outlines. */
+.home { max-width: 76rem; margin: 0 auto; padding: clamp(2.5rem, 6vw, 4.75rem) clamp(1rem, 5vw, 3rem) 6rem; }
+.home h2 { margin: 0 0 1.1rem; font: 600 1.75rem/1.2 var(--serif); letter-spacing: -.01em; }
+.home p { margin: 0 0 1em; hyphens: auto; text-wrap: pretty; }
+.home a { color: inherit; text-decoration: underline; text-decoration-color: var(--blue-line); text-decoration-thickness: 1px; text-underline-offset: .2em; }
+.home a:hover { text-decoration-color: var(--blue); text-decoration-thickness: 2px; }
+.home .k { margin-right: .55rem; font: 650 .72rem/1 var(--label); font-stretch: 75%; letter-spacing: .08em; text-transform: uppercase; color: var(--n6); }
+.is-missing { display: grid; place-items: center; padding: .75rem; border: 1px dashed var(--n5); color: var(--n6); font: 600 .72rem/1.3 var(--label); font-stretch: 80%; letter-spacing: .06em; text-transform: uppercase; text-align: center; }
+.is-missing-inline { padding-bottom: 1px; border-bottom: 1px dashed var(--n5); color: var(--n6); }
+
+.home-top, .home-low { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: clamp(2rem, 4vw, 3.5rem); }
+.home-top { row-gap: 2.5rem; padding-bottom: 3.5rem; }
+.who { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: end; }
+.who > div { display: contents; }
+.who-name, .home .who-aff { grid-column: 1; }
+.who-name { grid-column: 1 / -1; }
+.who-links { grid-column: 2; }
+.who-name { margin: 0 0 .9rem; font: 600 clamp(2.4rem, 4.6vw, 3.6rem)/1.02 var(--serif); letter-spacing: -.015em; text-wrap: balance; }
+.home .who-aff { margin: 0; font: 500 1rem/1.4 var(--label); font-stretch: 90%; color: var(--blue); }
+.who-links { list-style: none; display: flex; flex-wrap: wrap; gap: .6rem 2.25rem; margin: 0; padding: 0; font: 500 1rem/1.4 var(--label); font-stretch: 90%; font-variant-numeric: tabular-nums; }
+.who-photo { display: grid; margin: 0; padding: .6rem; background: var(--n0); border: 1px solid var(--n3); }
+.who-photo img { display: block; width: 100%; height: 100%; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 30%; }
+.who-photo.is-missing { aspect-ratio: 4 / 3; background: none; border: 1px dashed var(--n5); }
+.who-bio { margin-top: 3rem; }
+.home .who-bio p { font-size: 1.0625rem; line-height: 1.6; color: var(--n8); }
+.home .who-bio p:last-child { margin-bottom: 0; }
+.who-bio-missing { min-height: 5.5rem; }
+
+.plate { padding: 1.75rem 1.75rem 1.5rem; background: var(--n0); border: 1px solid var(--n3); }
+.home .plate-title { margin: 0; font: 600 clamp(1.5rem, 2.4vw, 1.9rem)/1.2 var(--serif); text-wrap: balance; }
+.home .plate-title a { text-decoration: none; }
+.home .plate-title a:hover { color: var(--blue); text-decoration: underline; text-decoration-color: var(--blue); text-decoration-thickness: 2px; }
+.plate-title::after { content: ""; display: block; height: 5px; margin: 1.25rem 0 1.15rem; background: var(--wg); border-block: 1px solid var(--wg-edge); }
+.plate-meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .45rem 1.25rem; margin: 0; font-size: 1rem; line-height: 1.45; }
+.plate-meta dt { padding-top: .3em; font: 650 .7rem/1 var(--label); font-stretch: 75%; letter-spacing: .08em; text-transform: uppercase; color: var(--n6); }
+.plate-meta dd { margin: 0; color: var(--n9); }
+
+.home-low { row-gap: 3rem; }
+.home-low::before { content: ""; grid-column: 1 / -1; height: 5px; margin-bottom: .25rem; background: var(--wg); border-block: 1px solid var(--wg-edge); }
+.nw { white-space: nowrap; }
+.home .more { margin-top: 1.5rem; font: 500 .95rem/1.4 var(--label); font-stretch: 90%; color: var(--n6); }
+.chaps { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--n4); }
+.home .chaps a { display: grid; grid-template-columns: 2.75rem minmax(0, 1fr) auto; gap: .75rem; align-items: baseline; padding: .8rem 0; border-bottom: 1px solid var(--n3); color: var(--n9); text-decoration: none; }
+.chaps .n { font: 700 1.85rem/1 var(--label); font-stretch: 62%; color: var(--blue); font-variant-numeric: tabular-nums; }
+.chaps .n:empty::before { content: "\200b"; }
+.chaps .t { font: 600 1.08rem/1.3 var(--serif); }
+.chaps .c { font: 500 .875rem/1 var(--label); font-stretch: 80%; color: var(--n6); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chaps a:hover .t { text-decoration: underline; text-decoration-color: var(--blue); text-underline-offset: .2em; }
+
+.cite { margin-top: 4.5rem; padding: 1.75rem 1.75rem 1.4rem; background: var(--n0); border: 1px solid var(--n3); }
+.home .cite .ref { margin: 0; font-size: 1.05rem; line-height: 1.55; }
+.bib-copy { margin-top: 1rem; padding: .5rem .75rem; background: var(--n0); border: 1px solid var(--n4); color: var(--blue); cursor: pointer;
+  font: 650 .75rem/1 var(--label); font-stretch: 75%; letter-spacing: .08em; text-transform: uppercase; transition: border-color .15s ease-out; }
+.bib-copy:hover { border-color: var(--blue); }
+.bib { margin-top: 1rem; }
+.bib summary { width: fit-content; cursor: pointer; font: 650 .72rem/1 var(--label); font-stretch: 75%; letter-spacing: .08em; text-transform: uppercase; color: var(--n6); }
+.bib summary:hover { color: var(--blue); }
+.bib pre { margin: .75rem 0 0; padding: .9rem 1rem; overflow-x: auto; background: var(--n1); border: 1px solid var(--n3); user-select: all;
+  font: 400 .85rem/1.5 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; color: var(--n9); }
+
+@media (max-width: 960px) {
+  .home-top, .home-low { grid-template-columns: minmax(0, 1fr); }
+  .who { grid-template-columns: minmax(0, 1fr); row-gap: 1.25rem; }
+  .who-links { grid-column: 1; }
+}
+@media (max-width: 640px) {
+  [data-page="index.html"] .mast-title { display: inline; }
+  .plate, .cite, .who-photo { margin-inline: -1rem; padding-inline: 1rem; border-inline: 0; }
+  .home .chaps a { grid-template-columns: 2.25rem minmax(0, 1fr); }
+  .chaps .c { display: none; }
+}
+
+/* Return to where the reader was before following an in-page reference. */
+.return { position: fixed; z-index: 60; bottom: 1.5rem; left: calc(18.5rem + 1.5rem); display: flex; align-items: center; gap: .5rem;
+  padding: .55rem .9rem .55rem .7rem; background: var(--blue); color: var(--n0); border: 0; cursor: pointer;
+  font: 600 .8rem/1 var(--label); font-stretch: 85%; letter-spacing: .04em; box-shadow: 0 8px 24px rgb(12 37 119 / .25), 0 2px 4px rgb(16 22 31 / .12);
+  opacity: 0; transform: translateY(.5rem); pointer-events: none; transition: opacity .18s ease-out, transform .25s cubic-bezier(.2, .8, .2, 1); }
+.return.is-shown { opacity: 1; transform: none; pointer-events: auto; }
+.return svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.return:hover { background: var(--blue-2); }
+@media (max-width: 1099px) { .return { left: 1rem; } }
+@media (prefers-reduced-motion: reduce) { .return { transition: none; transform: none; } }
+
+/* Epigraph (acknowledgements.html): the gloss at the left and 木漏れ日 stacked at
+   the right beside a grey rule, side by side in one row of the page's grid
+   (dense flow puts the gloss beside the kanji that precede it). A guide across
+   both, as above the pager, sets it apart from the acknowledgements, as its own
+   page does in the PDF. */
+[data-page="acknowledgements.html"] .body { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-auto-flow: row dense; }
+[data-page="acknowledgements.html"] .body > * { grid-column: 1 / -1; }
+[data-page="acknowledgements.html"] .body > :is(.subgrid, .subgrid + div) { margin: 4.5rem 0 4rem; padding-top: 3rem;
+  background: linear-gradient(var(--wg), var(--wg)) 0 1px / 100% 3px no-repeat, linear-gradient(var(--wg-edge), var(--wg-edge)) 0 0 / 100% 1px no-repeat,
+    linear-gradient(var(--wg-edge), var(--wg-edge)) 0 4px / 100% 1px no-repeat; }
+[data-page="acknowledgements.html"] .body > .subgrid { grid-column: 2; justify-content: end; align-items: stretch; column-gap: 1.3em; padding-left: 2.5rem; }
+[data-page="acknowledgements.html"] .body > .subgrid > div:first-child { display: block; width: 1px; background: var(--n5); }
+[data-page="acknowledgements.html"] .body > .subgrid > div:last-child { font-size: 2.2rem; line-height: 1.4; }
+[data-page="acknowledgements.html"] .body > .subgrid + div { grid-column: 1; display: flex; flex-direction: column; justify-content: center; }
+[data-page="acknowledgements.html"] .body > .subgrid + div p { margin: 0 0 .6em; }
+[data-page="acknowledgements.html"] .body > .subgrid + div p:last-child { margin: .9em 0 0; font-size: .85em; color: var(--n6); }
+@media (max-width: 640px) { [data-page="acknowledgements.html"] .body > .subgrid { padding-left: 1.25rem; grid-template-columns: auto auto !important; } }
